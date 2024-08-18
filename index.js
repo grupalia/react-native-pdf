@@ -130,7 +130,7 @@ export default class Pdf extends Component {
         if ((nextSource.uri !== curSource.uri)) {
             // if has download task, then cancel it.
             if (this.lastRNBFTask) {
-                this.lastRNBFTask.cancel(err => {
+                this.lastRNBFTask.cancel?.(err => {
                     this._loadFromSource(this.props.source);
                 });
                 this.lastRNBFTask = null;
@@ -148,8 +148,6 @@ export default class Pdf extends Component {
     componentWillUnmount() {
         this._mounted = false;
         if (this.lastRNBFTask) {
-            // this.lastRNBFTask.cancel(err => {
-            // });
             this.lastRNBFTask = null;
         }
 
@@ -253,7 +251,7 @@ export default class Pdf extends Component {
     _downloadFile = async (source, cacheFile) => {
 
         if (this.lastRNBFTask) {
-            this.lastRNBFTask.cancel(err => {
+            this.lastRNBFTask.cancel?.(err => {
             });
             this.lastRNBFTask = null;
         }
@@ -319,7 +317,11 @@ export default class Pdf extends Component {
                         this._unlinkFile(tempCacheFile);
                     })
                     .catch(async (error) => {
-                        throw error;
+                        this._unlinkFile(tempCacheFile);
+                        this._unlinkFile(cacheFile);
+                        if (error.name !== 'ReactNativeBlobUtilCanceledFetch') {
+                            this._onError(error);
+                        }
                     });
             })
             .catch(async (error) => {
@@ -360,7 +362,7 @@ export default class Pdf extends Component {
                 page: pageNumber
             });
           }
-        
+
     }
 
     _onChange = (event) => {
